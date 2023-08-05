@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block  title %}
+    Results
+    {% endblock %}
+{% block content %}
+    <ul>
+    {% for program in programs %}
+    <li>{{ program.program_name }} - {{ program.program_short_name}}</li>
+        </ul>
+    {% endfor %}
+{% endblock %}
