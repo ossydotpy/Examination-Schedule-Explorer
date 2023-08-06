@@ -3,7 +3,8 @@ from timetable import db
 
 exam_program_association = db.Table('exam_program_association',
                                     db.Column('exam_id', db.Integer, db.ForeignKey('exam.exam_id'), primary_key=True),
-                                    db.Column('program_id', db.Integer, db.ForeignKey('program.program_id'), primary_key=True)
+                                    db.Column('program_id', db.Integer, db.ForeignKey('program.program_id'),
+                                              primary_key=True)
                                     )
 
 
@@ -15,7 +16,7 @@ class Program(db.Model):
     examinations = db.relationship('Exam', secondary=exam_program_association, back_populates='programs')
 
     def __repr__(self):
-        return f'{self.program_name}({self.program_short_name})'
+        return f'{self.program_name} ({self.program_short_name})'
 
 
 class Exam(db.Model):

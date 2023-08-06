@@ -1,11 +1,100 @@
 {% extends 'base.html' %}
 {% block  title %}
     Results
-    {% endblock %}
-{% block content %}
-    <ul>
-    {% for program in programs %}
-    <li>{{ program.program_name }} - {{ program.program_short_name}}</li>
-        </ul>
-    {% endfor %}
 {% endblock %}
+{% block content %}
+    <div class="d-flex justify-content-center"><h1>Examinations for your selected Major: {{major}}</h1></div>
+    {% if major_exams %}
+        <div class="container mt-4">
+            <table id="major-table" class="table table-striped" style="width:100%">
+                <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Start</th>
+                    <th>End</th>
+                    <th>Examination</th>
+                    <th>Room(s)</th>
+                    <th>Status</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for exam in major_exams %}
+                    <tr>
+                        <td>{{ exam.Date }}</td>
+                        <td>{{ exam.Start }}</td>
+                        <td>{{ exam.End }}</td>
+                        <td>{{ exam.exam_name }}</td>
+                        <td>{{ exam.Room }}</td>
+                        <td>{% if exam.Date < today_date %}
+                            <a href="#" class="btn btn-danger">Written</a>
+                        {% elif exam.Date == today_date %}
+                            <a href="#" class="btn btn-primary">Today</a>
+                        {% else %}
+                            <a href="#" class="btn btn-secondary">in {{ exam.days_left }} days</a>
+                        {% endif %}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <script>
+            $(document).ready(function() {
+                $('#major-table').DataTable();
+            });
+        </script>
+    {% else %}
+        <div class="d-flex justify-content-center"><li>No Examinations for your major</li></div>
+    {% endif %}
+    <br>
+    {% if minor_exams %}
+        <div class="d-flex justify-content-center"><h1>Examinations for your selected minor: {{ minor }}</h1></div>
+
+        <div class="container mt-4">
+            <table id="minor-table" class="table table-striped" style="width:100%">
+                <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Start</th>
+                    <th>End</th>
+                    <th>Examination</th>
+                    <th>Room(s)</th>
+                    <th>Status</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for exam in minor_exams %}
+                    <tr>
+                        <td>{{ exam.Date }}</td>
+                        <td>{{ exam.Start }}</td>
+                        <td>{{ exam.End }}</td>
+                        <td>{{ exam.exam_name }}</td>
+                        <td>{{ exam.Room }}</td>
+                        <td>{% if exam.Date < today_date %}
+                            <a href="#" class="btn btn-danger">Written</a>
+                        {% elif exam.Date == today_date %}
+                            <a href="#" class="btn btn-primary">Today</a>
+                        {% else %}
+                            <a href="#" class="btn btn-secondary">in {{ exam.days_left }} days</a>
+                        {% endif %}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <script>
+            $(document).ready(function() {
+                $('#minor-table').DataTable();
+            });
+        </script>
+    {% else %}
+        <div class="d-flex justify-content-center"><li>No Examinations for your major</li></div>
+    {% endif %}
+{% endblock %}
+
+<style>
+    .d-flex{
+        margin-top: 100px;
+    }
+</style>
+

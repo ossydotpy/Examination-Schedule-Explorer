@@ -4,15 +4,33 @@
 {% endblock %}
 {% block content %}
     <div class="left-container">
+        <div class="container mt-5">
+            <div class="row">
+                <div class="col-sm-4">
+                    <div class="card" style="width:300px">
+                        <img class="card-img-top" src="{{url_for('static', filename='img/tablr.png')}}" alt="Card image">
+                        <div class="card-body">
+                            <h4 class="card-title">tablr</h4>
+                            <p class="card-text">exam timetable companion.</p>
+                            <a href="#" class="btn btn-primary">Get help</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-8">
+                    <div class="right-container">
+                        <form method="POST">
+                            {{ form.hidden_tag() }}
+                            {{ form.level.label }}{{ form.level(class="form-select", placeholder='Select Your Level...') }}<br>
+                            {{ form.major.label }}{{ form.major(class="form-select", placeholder='Select Your Major...') }}<br>
+                            {{ form.minor.label }}{{ form.minor(class="form-select", placeholder='Select Your Minor...') }}<br>
+                            {{ form.submit(class="btn btn-primary") }}
 
-    </div>
-    <div class="left-container">
-    <form method="POST">
-    {{ form.hidden_tag() }}
-    {{ form.level.label }}{{ form.level }}
-    {{ form.program.label }}{{ form.program }}
-    {{ form.submit }}
+                        </form>
+                    </div>
+                </div>
 
-    </form>
+            </div>
+        </div>
     </div>
+
 {% endblock %}
