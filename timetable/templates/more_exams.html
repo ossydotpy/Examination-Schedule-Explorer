@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}
+    More Exams
+{% endblock %}
+{% block content %}
+    {% if additional_exams %}
+    <div class="container mt-4">
+    <div class="d-flex justify-content-center"><h1>{{ day }}'s Examinations.</h1></div>
+            <table id="day-table" class="table table-striped" style="width:100%">
+                <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Start</th>
+                    <th>End</th>
+                    <th>Examination</th>
+                    <th>Room(s)</th>
+                    <th>Status</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for exam in additional_exams %}
+                    <tr>
+                        <td>{{ exam.Date }}</td>
+                        <td>{{ exam.Start }}</td>
+                        <td>{{ exam.End }}</td>
+                        <td>{{ exam.exam_name }}</td>
+                        <td>{{ exam.Room }}</td>
+                        <td>
+                        {% if exam.Date == today_date %}
+                            <a href="#" class="btn btn-primary">Today</a>
+                        {% else %}
+                            <a href="#" class="btn btn-secondary">in {{ (exam.Date - today_date).days }} day(s)</a>
+                        {% endif %}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+    <script>
+            $(document).ready(function() {
+                $('#day-table').DataTable();
+            });
+        </script>
+        </div>
+    {% endif %}
+{% endblock %}
