@@ -4,42 +4,53 @@
 {% endblock %}
 {% block content %}
     {% if additional_exams %}
-    <div class="container mt-4">
-    <div class="d-flex justify-content-center"><h1>{{ day }}'s Examinations.</h1></div>
-            <table id="day-table" class="table table-striped" style="width:100%">
-                <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Start</th>
-                    <th>End</th>
-                    <th>Examination</th>
-                    <th>Room(s)</th>
-                    <th>Status</th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for exam in additional_exams %}
-                    <tr>
-                        <td>{{ exam.Date }}</td>
-                        <td>{{ exam.Start }}</td>
-                        <td>{{ exam.End }}</td>
-                        <td>{{ exam.exam_name }}</td>
-                        <td>{{ exam.Room }}</td>
-                        <td>
-                        {% if exam.Date == today_date %}
-                            <a href="#" class="btn btn-primary">Today</a>
-                        {% else %}
-                            <a href="#" class="btn btn-secondary">in {{ (exam.Date - today_date).days }} day(s)</a>
-                        {% endif %}</td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-    <script>
-            $(document).ready(function() {
-                $('#day-table').DataTable();
-            });
-        </script>
+        <div class="container mt-5">
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h1 class="text-primary fs-4">Examinations for {{ day }}</h1>
+                        <a href="{{ url_for('index') }}" class="btn btn-secondary fs-6">Back to Home</a>
+                    </div>
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control" id="searchInput" placeholder="Search exams...">
+                    </div>
+                    <div class="row row-cols-1 row-cols-md-3 g-4">
+                        {% for exam in additional_exams %}
+                            <div class="col exam-col">
+                                <div class="card exam-card p-3 shadow-sm">
+                                    <div class="card-body">
+                                        <div class="badge-container">
+                                            <span class="badge {{ 'bg-primary' if exam.Date == today_date else 'bg-secondary' }} rounded-pill ">
+                                                {{ 'Today' if exam.Date == today_date else (exam.Date - today_date).days ~ ' day more' }}
+                                            </span>
+                                        </div>
+                                        <h5 class="card-title fs-5">{{ exam.exam_name }}</h5>
+                                        <hr class="mt-2">
+                                        <strong>{{ exam.Date.strftime('%A, %d %B, %Y') }}</strong><br>
+                                        {{ exam.Start }} - {{ exam.End }}<br>
+                                        Room(s): {{ exam.Room }}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
         </div>
     {% endif %}
+    <script>
+    $(document).ready(function() {
+            $('#searchInput').keyup(function() {
+                var searchValue = $(this).val().toLowerCase();
+                $('.exam-col').each(function() {
+                    var examText = $(this).text().toLowerCase();
+                    if (examText.indexOf(searchValue) > -1) {
+                        $(this).show();
+                    } else {
+                        $(this).hide();
+                    }
+                });
+            });
+        });
+    </script>
 {% endblock %}

@@ -8,7 +8,7 @@ from timetable import app
 class LevelProgramForm(FlaskForm):
     def validate_major(self, field):
         if field.data == self.minor.data:
-            raise ValidationError("Major and minor cannot be the same.")
+            raise ValidationError("You cant have the same program as Major and Minor")
 
     with app.app_context():
         all_programs = Program.query.all()

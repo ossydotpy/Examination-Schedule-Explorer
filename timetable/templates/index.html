@@ -3,97 +3,108 @@
     Home
 {% endblock %}
 {% block content %}
-    <div class="container mt-4">
-    <div class="row justify-content-evenly">
-        <div class="col-sm-4">
-            <div class="card">
-                <img class="card-img-top" src="{{url_for('static', filename='img/tablr.png')}}" alt="Card image">
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-4">
+
+            <div class="card mb-4">
                 <div class="card-body">
-                    <h4 class="card-title">tablr</h4>
-                    <p class="card-text">exam timetable companion.</p>
-                    <a href="#" class="btn btn-primary">Get help</a>
+                    <form method="POST" class="needs-validation" novalidate>
+                        {{ form.hidden_tag() }}
+                        <div class="mb-3">
+                            <label for="{{ form.level.id }}" class="form-label">Select Your Level</label>
+                            {{ form.level(class="form-select", placeholder='Select Your Level...', required='required') }}
+                            <div class="invalid-feedback">
+                                Please select your level.
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="{{ form.major.id }}" class="form-label">Select Your Major</label>
+                            {{ form.major(class="form-select", placeholder='Select Your Major...', required='required') }}
+                            <div class="invalid-feedback">
+                                Please select your major.
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="{{ form.minor.id }}" class="form-label">Select Your Minor</label>
+                            {{ form.minor(class="form-select", placeholder='Select Your Minor...', required='required') }}
+                            <div class="invalid-feedback">
+                                Please select your minor.
+                            </div>
+                        </div>
+                        {{ form.submit(class="btn btn-primary btn-block") }}
+                    </form>
                 </div>
             </div>
-        </div>
 
-        <div class="col-sm-4">
-            <div class="right-container">
-                <form method="POST">
-                    {{ form.hidden_tag() }}
-                    <div class="mb-3">
-                        {{ form.level.label }}
-                        {{ form.level(class="form-select", placeholder='Select Your Level...') }}
-                    </div>
-                    <div class="mb-3">
-                        {{ form.major.label }}
-                        {{ form.major(class="form-select", placeholder='Select Your Major...') }}
-                    </div>
-                    <div class="mb-3">
-                        {{ form.minor.label }}
-                        {{ form.minor(class="form-select", placeholder='Select Your Minor...') }}
-                    </div>
-                    {{ form.submit(class="btn btn-primary") }}<br>
-                </form>
+            <div class="card mb-4 d-none d-md-block">
+                <img class="card-img-top" src="{{url_for('static', filename='img/placeholder.png')}}" alt="Card image">
+                <div class="card-body">
+                    <h4 class="card-title">tablr</h4>
+                    <p class="card-text">Your Exam Timetable Companion</p>
+                    <a href="#" class="btn btn-primary btn-block">Get Help</a>
+                </div>
             </div>
+
         </div>
 
-        <div class="col-sm-4">
-            <div class="exam-list">
-                <em class="text-danger">This column shows only 10 exams for each day. Refer to your major and minor for your full table</em><br><hr>
-                <div class="card bg-primary" style="width: 18rem;">
-                        <div class="card-header text-white">
-                        Today's Exams<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                        {% if today_exams| length>1 %}
-                        {{ today_exams|length }}
-                        {% else %}0
-                        {% endif %}
-                        <span class="visually-hidden">upcoming exams</span>
-                      </span>
-                        </div>
-                        <ul class="list-group list-group-flush">
-                            {% if today_exams %}
-                                {% for exam in today_exams %}
-                                {% if loop.index <= 5 %}
-                                    <li class="list-group-item"> <span class="badge bg-primary text-white ">{{ exam.Start }}-{{ exam.End }}</span> {{ exam }}</li>
-                                    {% endif %}
-                                {% endfor %}
-                                {% if today_exams|length > 5 %}
-                                <a class="list-group-item" href="{{ url_for('more_exams', day='today') }}">+{{ today_exams|length - 5 }} more</a>
-                                {% endif %}
-
-                            {% else %}
-                                <li class="list-group-item">No exam scheduled for this time.</li>
-                            {% endif %}
-                        </ul>
+        <div class="col-md-6 col-lg-4">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="text-center">
+                        <h5 class="mb-3">Today's Exams</h5>
+                        <span class="badge bg-danger rounded-pill">
+                            {{ today_exams|length if today_exams|length > 1 else 0 }} exams found
+                        </span>
                     </div>
-
-                <br>
-                <div class="exam-list">
-                    <div class="card bg-primary" style="width: 18rem;">
-                        <div class="card-header text-white">
-                        Tomorrow's Exams<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                        {% if tomorrow_exams| length>1 %}
-                        {{ tomorrow_exams|length }}
-                        {% else %}0
-                        {% endif %}
-                        <span class="visually-hidden">upcoming exams</span>
-                      </span>
-                        </div>
-                        <ul class="list-group list-group-flush">
-                            {% if tomorrow_exams %}
-                                {% for exam in tomorrow_exams %}
-                                {% if loop.index <= 5 %}
-                                    <li class="list-group-item"> <span class="badge bg-primary text-white ">{{ exam.Start }}-{{ exam.End }}</span> {{ exam }}</li>
-                                    {% endif %}
-                                {% endfor %}
-                                <a class="list-group-item" href="{{ url_for('more_exams', day='tomorrow') }}">+{{ tomorrow_exams|length-5 }} more</a>
-                            {% else %}
-                                <li class="list-group-item">No exam scheduled for this time.</li>
+                    <ul class="list-group list-group-flush">
+                        {% if today_exams %}
+                            {% for exam in today_exams[:5] %}
+                                <li class="list-group-item">
+                                    <span class="badge bg-primary text-white">{{ exam.Start }}-{{ exam.End }}</span>
+                                    {{ exam }}
+                                </li>
+                            {% endfor %}
+                            {% if today_exams|length > 5 %}
+                            <a class="list-group-item text-primary" href="{{ url_for('more_exams', day='today') }}">
+                                +{{ today_exams|length - 5 }} More Exams
+                            </a>
                             {% endif %}
-                        </ul>
+                        {% else %}
+                            <li class="list-group-item">No exams scheduled for today.</li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="text-center">
+                        <h5 class="mb-3">Tomorrow's Exams</h5>
+                        <span class="badge bg-danger rounded-pill">
+                            {{ tomorrow_exams|length if tomorrow_exams|length > 1 else 0 }} exams found
+                        </span>
                     </div>
+                    <ul class="list-group list-group-flush">
+                        {% if tomorrow_exams %}
+                            {% for exam in tomorrow_exams[:5] %}
+                                <li class="list-group-item">
+                                    <span class="badge bg-primary text-white">{{ exam.Start }}-{{ exam.End }}</span>
+                                    {{ exam }}
+                                </li>
+                            {% endfor %}
+                            {% if tomorrow_exams|length > 5 %}
+                            <a class="list-group-item text-primary" href="{{ url_for('more_exams', day='tomorrow') }}">
+                                +{{ tomorrow_exams|length - 5 }} More Exams
+                            </a>
+                            {% endif %}
+                        {% else %}
+                            <li class="list-group-item">No exams scheduled for tomorrow.</li>
+                        {% endif %}
+                    </ul>
                 </div>
             </div>
         </div>
     </div>
+</div>
 {% endblock %}

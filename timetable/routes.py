@@ -1,6 +1,7 @@
 from datetime import datetime, date, timedelta
 
 from flask import render_template, request, redirect, url_for, flash
+from markupsafe import escape, Markup
 
 from timetable import app, db
 from timetable.forms import LevelProgramForm
@@ -36,8 +37,11 @@ def index():
 
     if form.validate_on_submit():
         return redirect(url_for('results_page', level=level, major=major, minor=minor))
-    flash('You cant have the same program as both a major and minor', category='danger')
 
+    if request.method == 'POST':
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f"{error}", category='danger')
     return render_template('index.html', form=form, today_exams=today_exams, tomorrow_exams=tomorrow_exams)
 
 
@@ -50,37 +54,45 @@ def results_page():
         return redirect(url_for('index'))
 
     with app.app_context():
-        major = Program.query.filter_by(program_short_name=major_short_name).first()
-        minor = Program.query.filter_by(program_short_name=minor_short_name).first()
+        major = Program.query.filter_by(program_short_name=major_short_name).first().program_name
+        minor = Program.query.filter_by(program_short_name=minor_short_name).first().program_name
 
-        all_major_exams = (
-            db.session.query(Exam).filter(Exam.exam_name.contains(major_short_name)).all()
-        )
+        all_major_exams = db.session.query(Exam).filter(Exam.exam_name.contains(major_short_name)).all()
+        all_minor_exams = db.session.query(Exam).filter(Exam.exam_name.contains(minor_short_name)).all()
 
-        all_minor_exams = (
-            db.session.query(Exam).filter(Exam.exam_name.contains(minor_short_name)).all()
-        )
+        def process_exams(exams):
+            return [
+                x for x in exams if x.exam_name.split(' ')[1][0] == level
+            ]
 
-        today_date = datetime.today().date()
+        major_exams = process_exams(all_major_exams)
+        minor_exams = process_exams(all_minor_exams)
 
-        for exam in all_major_exams:
+        for exam in all_major_exams + all_minor_exams:
             exam.Date = datetime.strptime(exam.Date, '%d-%b-%y').date()
-            exam.days_left = (exam.Date - today_date).days
+            exam.Start = datetime.strptime(exam.Start, "%I:%M %p").time()
+            exam.End = datetime.strptime(exam.End, "%I:%M %p").time()
 
-        for exam in all_minor_exams:
-            exam.Date = datetime.strptime(exam.Date, '%d-%b-%y').date()
-            exam.days_left = (exam.Date - today_date).days
+            exam_datetime = datetime.combine(exam.Date, exam.Start)
+            time_left = exam_datetime - datetime.now()
 
-        major_exams = [x for x in all_major_exams if x.exam_name.split(' ')[1][0] == level]
-        minor_exams = [x for x in all_minor_exams if x.exam_name.split(' ')[1][0] == level]
+            days_left = time_left.days
+            seconds_left = time_left.seconds
+            hours_left = seconds_left // 3600
+            minutes_left = (seconds_left % 3600) // 60
 
-    flash(f'Selected Programs:\nMajor: {major}\nMinor: {minor}', category='success')
+            exam.time_left = f"{days_left} days, {hours_left} hours, {minutes_left} minutes left"
+            now = datetime.now().time()
+            message = Markup('<p>You have selected the following Programs: Major: <strong>{}</strong></p>Minor: '
+                             '<strong>{}</strong></p>Selected level: Level <strong>{}</strong>00')
+    flash(message.format(major, minor, level), category='info')
     return render_template('results.html', major_exams=major_exams, minor_exams=minor_exams, major=major, minor=minor,
-                           today_date=today_date)
+                           today_date=today, now=now)
 
 
 @app.route('/more_exams/<string:day>')
 def more_exams(day):
+    day = escape(day)
     additional_exams = []
     if day == 'today':
         additional_exams = today_exams

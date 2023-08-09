@@ -1,0 +1,47 @@
+<div class="col-md-6">
+    <div class="card mb-4">
+        <div class="card-header">
+            Examinations for your selected {{ title }}: {{ program_name }}
+        </div>
+        <div class="card-body">
+            {% if exams %}
+                <div id="{{ card_id }}" class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Examination</th>
+                                <th>Room(s)</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for exam in exams %}
+                                <tr>
+                                    <td>{{ exam.Date.strftime('%A, %d-%B,%Y') }}</td>
+                                    <td>{{ exam.Start }} - {{ exam.End }}</td>
+                                    <td>{{ exam.exam_name }}</td>
+                                    <td>{{ exam.Room }}</td>
+                                    <td>
+                                        {% if exam.Date==today_date and exam.Start<=now<exam.End %}
+                                                <span class="badge rounded-pill text-bg-success">In progress</span>
+                                            {% elif exam.Date<today_date or (exam.Date==today_date and exam.End < now)%}
+                                            <span class="badge rounded-pill text-bg-danger">Ended</span>
+
+                                            {% elif exam.Date>today_date or (exam.Date == today_date and exam.Start>now) %}
+                                            <span class="badge rounded-pill text-bg-secondary">{{ exam.time_left }}</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p>No Examinations for your {{ title.lower() }}.</p>
+                <p>Check if you've selected the correct level.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>

@@ -1,0 +1,19 @@
+.exam-card {
+    border: none;
+    height: 200px;
+    transition: transform 0.2s;
+    background-color: #fff;
+}
+
+.exam-card:hover {
+    transform: translateY(-5px);
+}
+
+.card {
+    border: none;
+}
+
+.card-text {
+    font-size: 14px;
+    color: #6c757d;
+}
