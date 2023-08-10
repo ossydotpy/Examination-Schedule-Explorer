@@ -54,8 +54,12 @@ def results_page():
         return redirect(url_for('index'))
 
     with app.app_context():
-        major = Program.query.filter_by(program_short_name=major_short_name).first().program_name
-        minor = Program.query.filter_by(program_short_name=minor_short_name).first().program_name
+        try:
+            major = Program.query.filter_by(program_short_name=major_short_name).first().program_name
+            minor = Program.query.filter_by(program_short_name=minor_short_name).first().program_name
+        except AttributeError as e:
+            flash('invalid selection. check the programs you chose', category='danger')
+            return redirect(url_for('index'))
 
         all_major_exams = db.session.query(Exam).filter(Exam.exam_name.contains(major_short_name)).all()
         all_minor_exams = db.session.query(Exam).filter(Exam.exam_name.contains(minor_short_name)).all()
@@ -93,11 +97,23 @@ def results_page():
 @app.route('/more_exams/<string:day>')
 def more_exams(day):
     day = escape(day)
-    additional_exams = []
     if day == 'today':
         additional_exams = today_exams
-    if day == 'tomorrow':
+    elif day == 'tomorrow':
         additional_exams = tomorrow_exams
+    else:
+        flash('invalid day!', category='danger')
+        return redirect(url_for('index'))
 
     return render_template('more_exams.html', additional_exams=additional_exams,
                            today_date=today, day=day.title())
+
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
+
+
+@app.errorhandler(500)
+def page_not_found(e):
+    return render_template('500.html'), 500
