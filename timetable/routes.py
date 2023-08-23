@@ -7,6 +7,8 @@ from timetable import app, db
 from timetable.forms import LevelProgramForm
 from timetable.models import Program, Exam
 
+from sqlalchemy import or_
+
 today = date.today()
 tomorrow = today + timedelta(days=1)
 
@@ -55,9 +57,14 @@ def index():
 
 @app.route('/results', methods=['GET', 'POST'])
 def results_page():
-    major_short_name = request.args.get('major')
-    minor_short_name = request.args.get('minor')
-    level = request.args.get('level')
+    try:
+        major_short_name = request.args['major']
+        minor_short_name = request.args['minor']
+        level = request.args['level']
+    except KeyError:
+        flash('Invalid URL parameters. Please check the provided parameters.', category='danger')
+        return redirect(url_for('index'))
+
     if minor_short_name == major_short_name:
         return redirect(url_for('index'))
 
@@ -65,22 +72,20 @@ def results_page():
         try:
             major = Program.query.filter_by(program_short_name=major_short_name).first().program_name
             minor = Program.query.filter_by(program_short_name=minor_short_name).first().program_name
-        except AttributeError as e:
-            flash('invalid selection. check the programs you chose', category='danger')
+        except AttributeError:
+            flash('Invalid selection. Please check the programs you chose.', category='danger')
             return redirect(url_for('index'))
 
-        all_major_exams = db.session.query(Exam).filter(Exam.exam_name.contains(major_short_name)).all()
-        all_minor_exams = db.session.query(Exam).filter(Exam.exam_name.contains(minor_short_name)).all()
+        all_exams = Exam.query.filter(
+            or_(
+                Exam.exam_name.contains(major_short_name),
+                Exam.exam_name.contains(minor_short_name),
+                Exam.is_faculty_wide == True
+            )
+        ).all()
+        combined = [x for x in all_exams if x.exam_name.split(' ')[1][0] == level]
 
-        def process_exams(exams):
-            return [
-                x for x in exams if x.exam_name.split(' ')[1][0] == level
-            ]
-
-        major_exams = process_exams(all_major_exams)
-        minor_exams = process_exams(all_minor_exams)
-
-        for exam in all_major_exams + all_minor_exams:
+        for exam in combined:
             exam.Date = datetime.strptime(exam.Date, '%d-%b-%y').date()
             exam.Start = datetime.strptime(exam.Start, "%I:%M %p").time()
             exam.End = datetime.strptime(exam.End, "%I:%M %p").time()
@@ -95,10 +100,16 @@ def results_page():
 
             exam.time_left = f"{days_left} days, {hours_left} hours, {minutes_left} minutes left"
             now = datetime.now().time()
+
+        try:
             message = Markup('<p>You have selected the following Programs: Major: <strong>{}</strong></p>Minor: '
-                             '<strong>{}</strong></p>Selected level: Level <strong>{}</strong>00')
-    flash(message.format(major, minor, level), category='info')
-    return render_template('results.html', major_exams=major_exams, minor_exams=minor_exams, major=major, minor=minor,
+                             '<strong>{}</strong></p>Selected level: Level <strong>{}00</strong>')
+            flash(message.format(major, minor, level), category='info')
+        except Exception as e:
+            message = "An error occurred: {}".format(e)
+            flash(message, category='info')  # Flash the error message here
+
+    return render_template('results.html', all_exams=combined, major=major, minor=minor,
                            today_date=today, now=now)
 
 

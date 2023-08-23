@@ -1,4 +1,3 @@
-import app
 from timetable import db
 
 exam_program_association = db.Table('exam_program_association',

@@ -36,10 +36,8 @@ $(document).ready(function () {
             'td { border-top: 1px dashed #ccc; }' +
             'h1 { border-bottom: 1px dashed #ccc; padding-bottom: 5px; }' +
             '</style></head><body>' +
-            '<h1>Your Personalised Timetable</h1>' +
-            generateTableHtml('Examinations for your Major', majorTable) +
-            generateTableHtml('Examinations for your Minor', minorTable) +
-            generateTableHtml('Faculty-wide Examinations', facultyTable) +
+            generateTableHtml('Examination Timetable', majorTable) +
+
             '</body></html>');
         printWindow.document.close();
 
