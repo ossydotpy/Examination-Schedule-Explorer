@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    500 Internal Server Error
+{% endblock %}
+
+{% block content %}
+    {% set error ='500 Internal Server Error' %}
+    {% set message = 'An internal server error occurred. Please try again later. '  %}
+{% include 'base_error.html' %} }}
+{% endblock %}

@@ -4,4 +4,4 @@ tableenv
 .vscode
 .idea
 tableenv
-database.db
+venv
