@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Full Faculty Timetable
+{% endblock %}
+{% block content %}
+        <div class="card mb-4">
+            <div class="card-body d-flex justify-content-between">
+                <p class="text-start">Faculty Timetable</p>
+                <button class="btn btn-primary btn-sm" id="printButton">Print Timetable</button>
+            </div>
+        </div>
+
+        <div class="row">
+            {% set today_time = now %}
+            {% set title = '' %}
+            {% set program_name = '1st Semester' %}
+            {% set exams = all_exams %}
+            {% set card_id = 'major-card' %}
+            {% include 'exam_card.html' %}
+        </div>
+
+    </div>
+
+    <script src="{{ url_for('static', filename="scripts/main.js") }}"></script>
+{% endblock %}

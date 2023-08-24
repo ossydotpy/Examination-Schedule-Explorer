@@ -128,6 +128,31 @@ def more_exams(day):
                            today_date=today, day=day.title())
 
 
+@app.route('/full_table', methods=['GET'])
+def full_table():
+    global now
+    with app.app_context():
+        all_exams = Exam.query.all()
+
+    for exam in all_exams:
+        exam.Date = datetime.strptime(exam.Date, '%d-%b-%y').date()
+        exam.Start = datetime.strptime(exam.Start, "%I:%M %p").time()
+        exam.End = datetime.strptime(exam.End, "%I:%M %p").time()
+
+        exam_datetime = datetime.combine(exam.Date, exam.Start)
+        time_left = exam_datetime - datetime.now()
+
+        days_left = time_left.days
+        seconds_left = time_left.seconds
+        hours_left = seconds_left // 3600
+        minutes_left = (seconds_left % 3600) // 60
+
+        exam.time_left = f"{days_left} days, {hours_left} hours, {minutes_left} minutes left"
+        now = datetime.now().time()
+    flash('This page contains examinations for the entire faculty', category='info')
+    return render_template('full_table.html', all_exams=all_exams,today_date=today, now=now)
+
+
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('404.html'), 404
