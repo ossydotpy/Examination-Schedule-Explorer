@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Admin Panel
+{% endblock %}
+
+{% block content %}
+    <div class="container mt-4">
+        <h2>Upload CSV File</h2>
+        <form method="POST" class="needs-validation" enctype="multipart/form-data">
+            {{ form.hidden_tag() }}
+            {{ form.csrf_token }}
+
+            <div class="mb-3">
+                <label for="{{ form.csv_file.id }}" class="form-label">Upload New Timetable File</label>
+                {{ form.csv_file(class="form-control", accept=".csv", required='required', id=form.csv_file.id) }}
+            </div>
+
+            {{ form.submit(class="btn btn-sm btn-primary") }}
+        </form>
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <ul class="flashes">
+                    {% for message in messages %}
+                        <li>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+    </div>
+{% endblock %}

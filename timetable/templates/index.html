@@ -9,7 +9,7 @@
 
             <div class="card mb-4">
                 <div class="card-body">
-                    <form method="POST" class="needs-validation" novalidate>
+                    <form method="POST" class="needs-validation"> <!--can add novalidate to perform server-side validation-->
                         {{ form.hidden_tag() }}
                         <div class="mb-3">
                             <label for="{{ form.level.id }}" class="form-label">Select Your Level</label>
