@@ -1,47 +1,88 @@
 import csv
+import openpyxl
+from datetime import date, datetime, timedelta
+
+import pandas as pd
+
 from timetable import db, app
 from timetable.models import Exam
-from datetime import datetime
 
 
-def process_csv_file(file):
+def format_time(time_str):
+    """
+    Function to format time from '3:30a' or '3:30p'.
+    """
+    time_str = time_str.strip()
     try:
-        with file.stream as csvfile:
-            content = csvfile.read().decode('utf-8-sig').splitlines()
-            reader = csv.reader(content, delimiter=',', quotechar='"')
+        if time_str.endswith('a'):
+            dt = datetime.strptime(time_str[:-1], '%I:%M')
+        elif time_str.endswith('p'):
+            dt = datetime.strptime(time_str[:-1], '%I:%M') + timedelta(hours=12)
+        else:
+            raise ValueError
+    except ValueError:
+        app.logger.error(f"Error: Invalid time format for '{time_str}'. Skipping...")
+        return None
+    return dt.strftime('%I:%M %p')
 
-            with app.app_context():
-                db.session.query(Exam).delete()
 
-                header = next(reader)
-                for row in reader:
-                    exam_data = dict(zip(header, row))
+def process_raw_data(raw_file):
+    try:
+        df = pd.read_csv(raw_file)
+    except FileNotFoundError:
+        app.logger.error(f"Error: File '{raw_file}' not found.")
+        exit()
+    except (pd.errors.ParserError, UnicodeDecodeError):
+        try:
+            df = pd.read_excel(raw_file)
+        except FileNotFoundError:
+            app.logger.error(f"Error: File '{raw_file}' not found.")
+            return
+        except Exception as e:
+            app.logger.error(f"Error: Unable to read file '{raw_file}': {e}")
+            return
 
-                    # Convert '0' and '1' to boolean values
-                    exam_data['is_faculty_wide'] = bool(int(exam_data['is_faculty_wide']))
+    try:
+        df = df.rename(columns={'Examination': 'exam_name', 'Date': 'Date', 'Day': 'Day',
+                                'Room': 'Room', 'Capacity': 'Capacity', ' Instructor': 'Instructor',
+                                ' Student\nConflicts': 'Student_Conflict',
+                                ' Instructor\nConflicts': 'Instructor_Conflict'})
+    except KeyError as e:
+        app.logger.error(f"Error: Column '{e.args[0]}' not found in the data file.")
 
-                    exam = Exam(
-                        exam_id=exam_data['exam_id'],
-                        exam_name=exam_data['exam_name'],
-                        Date=exam_data['Date'],
-                        Day=exam_data['Day'],
-                        Start=exam_data['Start'],
-                        End=exam_data['End'],
-                        Room=exam_data['Room'],
-                        Capacity=exam_data['Capacity'],
-                        Instructor=exam_data['Instructor'],
-                        Student_Conflict=exam_data['Student_Conflict'],
-                        Instructor_Conflict=exam_data['Instructor_Conflict'],
-                        is_faculty_wide=exam_data['is_faculty_wide']
-                    )
-                    db.session.add(exam)
+    df[["Start", "End"]] = df["Time"].str.split(' - ', expand=True)
+    df['Start'] = df['Start'].apply(format_time)
+    df['End'] = df['End'].apply(format_time)
+    df = df.sort_values(by=['Date', 'Start'])
+    df['is_faculty_wide'] = 0
 
-                db.session.commit()
-                return True
+    df.drop(columns=['Enrollment', 'Seating\nType', 'Time'], inplace=True)
 
-    except Exception as e:
-        app.logger.error(f'Error committing to the database: {str(e)}')
-        return False
+    cols = ['exam_name', 'Date', 'Day', 'Start', 'End', 'Room', 'Capacity', 'Instructor',
+            'Student_Conflict', 'Instructor_Conflict', 'is_faculty_wide']
+    df = df.reindex(columns=cols)
+
+    return df
+
+
+def process_clean_data(df):
+    if not isinstance(df, pd.DataFrame):
+        raise TypeError("Input data must be a pandas DataFrame.")
+    df = df.map(str)
+    with app.app_context():
+        db.session.query(Exam).delete()
+
+        for index, row in df.iterrows():
+            exam_data = row.to_dict()
+
+            # Convert '0' and '1' to boolean values if applicable
+            if exam_data['is_faculty_wide'] in ['0', '1']:
+                exam_data['is_faculty_wide'] = bool(int(exam_data['is_faculty_wide']))
+            exam = Exam(**exam_data)
+            db.session.add(exam)
+
+        db.session.commit()
+        return True
 
 
 def process_exam_datetime(exam):
@@ -51,7 +92,7 @@ def process_exam_datetime(exam):
     Args:
         exam (Exam): The Exam object to process.
     """
-    exam.Date = datetime.strptime(exam.Date, '%d-%b-%y').date()
+    exam.Date = datetime.strptime(exam.Date, '%d-%b-%y')
     exam.Start = datetime.strptime(exam.Start, "%I:%M %p").time()
     exam.End = datetime.strptime(exam.End, "%I:%M %p").time()
 
@@ -78,3 +119,4 @@ def calculate_time_left(exam):
     now = datetime.now().time()
 
     return now
+

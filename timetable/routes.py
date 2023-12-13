@@ -6,11 +6,10 @@ from markupsafe import escape, Markup
 from timetable import app
 from timetable.forms import LevelProgramForm, UploadForm
 from timetable.models import Program, Exam
-from .utils import process_csv_file, process_exam_datetime, calculate_time_left
+from .utils import process_clean_data, process_exam_datetime, calculate_time_left, process_raw_data
 from sqlalchemy import or_
 
-
-today = date.today()
+today = datetime.today()
 tomorrow = today + timedelta(days=1)
 
 
@@ -179,22 +178,28 @@ def settings():
     if request.method == 'POST' and form.validate_on_submit():
         try:
             file = form.csv_file.data
-
             if file and file.filename:
-                if process_csv_file(file):
-                    flash('CSV file uploaded and processed successfully!', 'success')
+                cleaned_data = process_raw_data(file)
+                if process_clean_data(cleaned_data):
+                    flash('file uploaded and processed successfully!', 'success')
                 else:
                     flash('Error updating the database. Please check the logs for more information.', 'danger')
             else:
-                flash('No file uploaded. Please select a CSV file to upload.', 'danger')
+                flash('No file uploaded. Please select a csv/excel file to upload.', 'danger')
 
         except Exception as e:
-            app.logger.error(f'Error processing CSV file: {str(e)}')
-            flash('Error processing CSV file. Please check the logs for more information.', 'danger')
+            print(e)
+            # app.logger.error(f'Error processing CSV file: {str(e)}')
+            flash('Error processing file. Please check the logs for more information.', 'danger')
 
         return redirect(url_for('settings'))
 
     return render_template('admin_dash.html', form=form)
+
+
+@app.route('/alt_display')
+def alt_display():
+    return render_template('alt_display.html')
 
 
 @app.errorhandler(404)

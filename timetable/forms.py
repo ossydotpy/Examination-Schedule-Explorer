@@ -18,8 +18,8 @@ class LevelProgramForm(FlaskForm):
 
 
 class UploadForm(FlaskForm):
-    csv_file = FileField('CSV File', validators=[
+    csv_file = FileField('CSV or Excel File', validators=[
         FileRequired(),
-        FileAllowed(['csv'], 'CSV files only!')
+        FileAllowed(['csv', 'xlsx'], 'CSV or Excel file formats only!')
     ])
     submit = SubmitField('Upload')
