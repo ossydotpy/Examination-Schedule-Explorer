@@ -5,6 +5,10 @@ Effective communication between faculty and the student body is crucial for fost
 
 ## Our Approach
 We've developed an interactive service using Flask to address this challenge. This platform empowers faculty members to easily communicate examination schedules with their students, ensuring seamless information flow.
+- Homepage
+![Screenshot 2023-10-05 093258](https://github.com/ossydotpy/Examination-Schedule-Explorer/assets/99814325/29fafce5-f808-4737-926b-bd9e75068db6)
+- Customized timetable view
+- ![Screenshot 2023-10-05 094015](https://github.com/ossydotpy/Examination-Schedule-Explorer/assets/99814325/88c6d86b-8110-4872-9f1a-c49a88c9f50a)
 
 ## Getting Started
 1. Clone this repository.
